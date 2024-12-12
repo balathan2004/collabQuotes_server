@@ -1,7 +1,6 @@
 import { Request, Response, Router } from "express";
 import supabase from "../utils/supabase_client";
-import supabaseAdmin from "../utils/supabase_admin";
-import { User } from "@supabase/supabase-js";
+
 import {
   QuoteInterface,
   ProfileResponseCofig,

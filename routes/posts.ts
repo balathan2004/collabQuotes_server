@@ -11,7 +11,7 @@ const uid = new ShortUniqueId({ length: 10 });
 app.post("/create_tweet", async (req: Request, res: Response) => {
   const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
 
-  const { quote, author } = req.body;
+  const { quote, author,username } = req.body;
 
   console.log("received ", collabQuotes_uid);
 
@@ -22,6 +22,7 @@ app.post("/create_tweet", async (req: Request, res: Response) => {
       quoteId: uid.rnd(),
       createdAt: new Date().getTime(),
       userId: collabQuotes_uid,
+      username:username
     };
 
     const { data, error } = await supabase.from("posts").insert(postData);
