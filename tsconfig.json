@@ -3,6 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types", "./types"],
     "rootDir": "./",
     "outDir": "./build",
     "esModuleInterop": true,
