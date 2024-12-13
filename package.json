@@ -1,14 +1,13 @@
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.2",
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.1",
+    "@supabase/supabase-js": "^2.47.6",
     "bull": "^4.16.4",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "formidable": "^3.5.2",
+    "fs": "^0.0.1-security",
     "random-avatar-generator": "^2.0.0",
     "redis": "^4.7.0",
     "short-unique-id": "^5.2.0",
@@ -21,13 +20,17 @@
     "@types/bull": "^3.15.9",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/formidable": "^3.4.5",
+    "@types/node": "^22.10.2",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   },
   "scripts": {
-    "start": "nodemon server.ts"
+    "dev": "nodemon server.ts",
+    "build": "tsc",
+    "start": "node build/server.js"
   },
   "keywords": [],
   "author": "",
