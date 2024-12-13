@@ -25,7 +25,7 @@ app.get(
         await supabase.from("posts").select("*", {}).eq("userId", id)
       ).data as QuoteInterface[];
 
-      console.log(userData, userPosts);
+
 
       if (checked) {
         res.json({

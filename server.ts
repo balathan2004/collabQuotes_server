@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import AuthRoutes from "./routes/auth";
 import PostRoutes from "./routes/posts";
 import ProfileRoutes from "./routes/profile";
+import AdminRoutes from "./routes/admin"
 import cookieParser from "cookie-parser";
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/auth", AuthRoutes);
 app.use("/posts", PostRoutes);
 app.use("/profile", ProfileRoutes);
+app.use("/admin", AdminRoutes);
 
 app.listen(3000, () => {
   console.log("server listen on 3000");

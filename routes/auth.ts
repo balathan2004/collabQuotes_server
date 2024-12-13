@@ -3,10 +3,10 @@ import supabase from "../utils/supabase_client";
 import supabaseAdmin from "../utils/supabase_admin";
 import { AuthResponseConfig, UserDataInterface } from "../utils/interfaces";
 import { generateFromEmail, generateUsername } from "unique-username-generator";
-import { AvatarGenerator } from 'random-avatar-generator';
- 
+import { AvatarGenerator } from "random-avatar-generator";
+
 const generator = new AvatarGenerator();
- 
+
 // Simply get a random avatar
 
 // Create a router instance
@@ -28,19 +28,24 @@ app.post("/login", async (req: Request, res: Response) => {
   });
 
   if (data && data.user) {
-    const userData = data.user;
+    const userData = (
+      await supabase.from("users").select("*").eq("email", email)
+    ).data;
+    const checked = userData ? (userData[0] as UserDataInterface) : null;
 
-    res.cookie("collabQuotes_uid", userData.id, {
-      maxAge: 2592000000,
-      sameSite: "none",
-      httpOnly: true,
-      secure: true,
-    });
-    res.json({
-      status: 200,
-      message: "Logged In",
-      credentials: userData,
-    });
+    if (checked) {
+      res.cookie("collabQuotes_uid", checked.userId, {
+        maxAge: 2592000000,
+        sameSite: "none",
+        httpOnly: true,
+        secure: true,
+      });
+      res.json({
+        status: 200,
+        message: "Logged In",
+        credentials: checked,
+      });
+    }
   } else {
     console.log(error);
 
@@ -59,29 +64,24 @@ app.post("/register", async (req: Request, res: Response) => {
   if (response) {
     const { data, error } = response;
     if (data && data.user) {
+      const username = generateUsername("-", 4, 20, "user");
 
-      const username=generateUsername("-",4,20,"user")
+      const userData: UserDataInterface = {
+        username: username,
+        userId: data.user.id,
+        profile_url: generator.generateRandomAvatar(),
+        email: email,
+        createdAt: new Date().getTime(),
+      };
 
-      const userData:UserDataInterface={
-        username:username,
-        userId:data.user.id,
-        profile_url:generator.generateRandomAvatar(),
-        email:email,
-        createdAt:new Date().getTime()
+      const responseData = (await supabase.from("users").insert(userData)).data;
 
-      }
-
-      const responseData= (await supabase.from("users").insert(userData)).data
-
-      if(responseData){
+      if (responseData) {
         res.json({
           status: 200,
           message: "Account Created",
         });
       }
-
-
-    
     } else {
       res.json({
         status: 300,
@@ -100,14 +100,15 @@ app.get("/login_cred", async (req: Request, res: Response): Promise<any> => {
 
   if (collabQuotes_uid) {
     const userData = (
-      await supabaseAdmin.auth.admin.getUserById(collabQuotes_uid)
-    ).data.user;
-    console.log(userData);
-    if (userData) {
+      await supabase.from("users").select("*").eq("userId", collabQuotes_uid)
+    ).data;
+    const checked = userData ? (userData[0] as UserDataInterface) : null;
+
+    if (checked) {
       res.json({
         status: 200,
         message: "Logged In",
-        credentials: userData,
+        credentials: checked,
       });
     } else {
       res.json({

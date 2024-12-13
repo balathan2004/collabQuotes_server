@@ -35,3 +35,11 @@ export interface QuoteInterface{
   username:string
 }
 
+export interface QuotesInterfaceWithProfile extends QuoteInterface {
+  profile_url: string;
+}
+
+export interface PostResponseConfig extends ResponseConfig {
+  quotes: QuotesInterfaceWithProfile[]| null;
+}
+
