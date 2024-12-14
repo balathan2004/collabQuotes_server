@@ -26,3 +26,5 @@ app.use("/admin", AdminRoutes);
 app.listen(3000, () => {
   console.log("server listen on 3000");
 });
+
+export default app;
