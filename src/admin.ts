@@ -9,10 +9,10 @@ import formidable, { IncomingForm } from "formidable";
 import { QuoteFileDataType } from "../utils/bull_queue";
 import fs from "fs";
 // Create a router instance
-const app = Router();
+const AdminRoutes = Router();
 const uid = new ShortUniqueId({ length: 10 });
 
-app.post("/create_bulk_tweet", async (req: Request, res: Response) => {
+AdminRoutes.post("/create_bulk_tweet", async (req: Request, res: Response) => {
   console.log("requested");
   const form = new IncomingForm();
 
@@ -44,4 +44,4 @@ app.post("/create_bulk_tweet", async (req: Request, res: Response) => {
   }
 });
 
-export default app;
+export default AdminRoutes;

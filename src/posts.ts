@@ -12,9 +12,9 @@ import { QuoteInterface } from "../utils/interfaces";
 import ShortUniqueId from "short-unique-id";
 const uid = new ShortUniqueId({ length: 10 });
 // Create a router instance
-const app = Router();
+const PostRoutes = Router();
 
-app.post("/create_tweet", async (req: Request, res: Response<ResponseConfig>) => {
+PostRoutes.post("/create_tweet", async (req: Request, res: Response<ResponseConfig>) => {
   const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
 
   const { quote, author, username } = req.body;
@@ -52,7 +52,7 @@ app.post("/create_tweet", async (req: Request, res: Response<ResponseConfig>) =>
   }
 });
 
-app.get(
+PostRoutes.get(
   "/get_posts",
   async (req: Request, res: Response<PostResponseConfig>) => {
     const usersData = (await supabase.from("users").select("*"))
@@ -74,4 +74,4 @@ app.get(
   }
 );
 
-export default app;
+export default PostRoutes;

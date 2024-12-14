@@ -8,9 +8,9 @@ import {
 } from "../utils/interfaces";
 
 // Create a router instance
-const app = Router();
+const ProfileRoutes = Router();
 
-app.get(
+ProfileRoutes.get(
   "/get_profile/:id",
   async (req: Request, res: Response<ProfileResponseCofig>) => {
     if (req.params && req.params.id) {
@@ -46,7 +46,7 @@ app.get(
   }
 );
 
-app.get(
+ProfileRoutes.get(
   "/my_profile",
   async (req: Request, res: Response<ProfileResponseCofig>) => {
     const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
@@ -84,4 +84,4 @@ app.get(
   }
 );
 
-export default app;
+export default ProfileRoutes;

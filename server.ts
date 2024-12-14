@@ -1,30 +1,47 @@
-import express, { Request, Response, Router } from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import AuthRoutes from "./routes/auth";
-import PostRoutes from "./routes/posts";
-import ProfileRoutes from "./routes/profile";
-import AdminRoutes from "./routes/admin"
 import cookieParser from "cookie-parser";
+import AdminRoutes from "./src/admin";
+import PostRoutes from "./src/posts";
+import AuthRoutes from "./src/auth";
+import ProfileRoutes from "./src/profile";
+dotenv.config();
 const app = express();
 
-dotenv.config();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "https://collab-quotes.vercel.app/",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 
 app.use(express.json());
-app.use("/auth", AuthRoutes);
-app.use("/posts", PostRoutes);
-app.use("/profile", ProfileRoutes);
-app.use("/admin", AdminRoutes);
 
-app.listen(3000, () => {
-  console.log("server listen on 3000");
+app.use('/auth',AuthRoutes)
+app.use("/admin",AdminRoutes)
+app.use("/profile",ProfileRoutes)
+app.use('/posts',PostRoutes)
+
+
+
+app.get("/hello", async (req: Request, res: Response) => {
+  res.cookie("testcollab_id", "leomessi", {
+    maxAge: 2592000000,
+    sameSite: "none",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production" ? true : false,
+  });
+  res.json({
+    status: 200,
+    message: "Logged In",
+  });
 });
 
-export default app;
+
+
+
+app.listen(3000, () => {
+  console.log("Server listening on port 3000");
+});
