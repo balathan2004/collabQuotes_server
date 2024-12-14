@@ -41,6 +41,7 @@ AuthRoutes.post(
 
       if (checked) {
         res.cookie("collabQuotes_uid", checked.userId, {
+          domain:"https://collab-quotes.vercel.app",
           maxAge: 2592000000,
           sameSite: "none",
           httpOnly: true,
