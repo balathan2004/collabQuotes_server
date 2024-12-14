@@ -42,7 +42,7 @@ app.post("/login", async (req: Request, res: Response<AuthResponseConfig>) => {
         maxAge: 2592000000,
         sameSite: "none",
         httpOnly: true,
-        secure: true,
+         secure: process.env.NODE_ENV === 'production'
       });
       res.json({
         status: 200,
