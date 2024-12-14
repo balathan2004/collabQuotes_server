@@ -12,19 +12,17 @@ const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://collab-quotes.vercel.app"],
     credentials: true,
   })
 );
 
 app.use(express.json());
 
-app.use('/auth',AuthRoutes)
-app.use("/admin",AdminRoutes)
-app.use("/profile",ProfileRoutes)
-app.use('/posts',PostRoutes)
-
-
+app.use("/auth", AuthRoutes);
+app.use("/admin", AdminRoutes);
+app.use("/profile", ProfileRoutes);
+app.use("/posts", PostRoutes);
 
 app.get("/hello", async (req: Request, res: Response) => {
   res.cookie("testcollab_id", "leomessi", {
@@ -38,9 +36,6 @@ app.get("/hello", async (req: Request, res: Response) => {
     message: "Logged In",
   });
 });
-
-
-
 
 app.listen(3000, () => {
   console.log("Server listening on port 3000");
