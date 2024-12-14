@@ -12,7 +12,7 @@ dotenv.config();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "https://collab-quotes.vercel.app",
+    origin: "https://collab-quotes.vercel.app/",
     credentials: true,
   })
 );
