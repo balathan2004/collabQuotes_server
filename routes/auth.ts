@@ -1,7 +1,11 @@
 import express, { Request, Response, Router } from "express";
 import supabase from "../utils/supabase_client";
 import supabaseAdmin from "../utils/supabase_admin";
-import { AuthResponseConfig, UserDataInterface } from "../utils/interfaces";
+import {
+  AuthResponseConfig,
+  ResponseConfig,
+  UserDataInterface,
+} from "../utils/interfaces";
 import { generateFromEmail, generateUsername } from "unique-username-generator";
 import { AvatarGenerator } from "random-avatar-generator";
 
@@ -17,7 +21,7 @@ interface Props {
   password: string;
 }
 
-app.post("/login", async (req: Request, res: Response) => {
+app.post("/login", async (req: Request, res: Response<AuthResponseConfig>) => {
   const { email, password }: Props = req.body;
 
   console.log("requested", email);
@@ -57,7 +61,7 @@ app.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/register", async (req: Request, res: Response) => {
+app.post("/register", async (req: Request, res: Response<ResponseConfig>) => {
   const { email, password }: Props = req.body;
 
   let response = await supabase.auth.signUp({ email: email, password });
@@ -83,47 +87,49 @@ app.post("/register", async (req: Request, res: Response) => {
         });
       }
     } else {
-      res.json({
-        status: 300,
-        message: "Try again later",
-      });
-    }
-  } else {
-    res.json({ message: "hi account created" });
-  }
-});
-
-app.get("/login_cred", async (req: Request, res: Response): Promise<any> => {
-  const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
-
-  console.log("login cred req", collabQuotes_uid);
-
-  if (collabQuotes_uid) {
-    const userData = (
-      await supabase.from("users").select("*").eq("userId", collabQuotes_uid)
-    ).data;
-    const checked = userData ? (userData[0] as UserDataInterface) : null;
-
-    if (checked) {
-      res.json({
-        status: 200,
-        message: "Logged In",
-        credentials: checked,
-      });
-    } else {
-      res.json({
-        status: 300,
-        message: "Invalid Authentication",
-        credentials: null,
-      });
     }
   } else {
     res.json({
       status: 300,
-      message: "No Uid Found",
-      credentials: null,
+      message: "Try again later",
     });
   }
 });
+
+app.get(
+  "/login_cred",
+  async (req: Request, res: Response<AuthResponseConfig>) => {
+    const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
+
+    console.log("login cred req", collabQuotes_uid);
+
+    if (collabQuotes_uid) {
+      const userData = (
+        await supabase.from("users").select("*").eq("userId", collabQuotes_uid)
+      ).data;
+      const checked = userData ? (userData[0] as UserDataInterface) : null;
+
+      if (checked) {
+        res.json({
+          status: 200,
+          message: "Logged In",
+          credentials: checked,
+        });
+      } else {
+        res.json({
+          status: 300,
+          message: "Invalid Authentication",
+          credentials: null,
+        });
+      }
+    } else {
+      res.json({
+        status: 300,
+        message: "No Uid Found",
+        credentials: null,
+      });
+    }
+  }
+);
 
 export default app;
