@@ -7,15 +7,19 @@ import PostRoutes from "./src/posts";
 import AuthRoutes from "./src/auth";
 import ProfileRoutes from "./src/profile";
 dotenv.config();
+
 const app = express();
 
-app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://collab-quotes.vercel.app"],
     credentials: true,
   })
 );
+
+
+
+app.use(cookieParser());
 
 app.use(express.json());
 
