@@ -10,16 +10,30 @@ dotenv.config();
 
 const app = express();
 
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173", "https://collab-quotes.vercel.app"],
+//     credentials: true,
+//   })
+// );
+
+const allowedOrigins = ["http://localhost:5173", "https://collab-quotes.vercel.app"];
+app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://collab-quotes.vercel.app"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
 
 
 
-app.use(cookieParser());
 
 app.use(express.json());
 
@@ -41,6 +55,9 @@ app.get("/hello", async (req: Request, res: Response) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on port 3000");
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
