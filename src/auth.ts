@@ -1,12 +1,12 @@
-import express, { Request, Response, Router } from "express";
+import { Request, Response, Router } from "express";
 import supabase from "../utils/supabase_client";
-import supabaseAdmin from "../utils/supabase_admin";
+
 import {
   AuthResponseConfig,
   ResponseConfig,
   UserDataInterface,
 } from "../utils/interfaces";
-import { generateFromEmail, generateUsername } from "unique-username-generator";
+import { generateUsername } from "unique-username-generator";
 import { AvatarGenerator } from "random-avatar-generator";
 
 const generator = new AvatarGenerator();
