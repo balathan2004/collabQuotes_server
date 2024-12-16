@@ -8,6 +8,7 @@ import {
 } from "../utils/interfaces";
 import { generateUsername } from "unique-username-generator";
 import { AvatarGenerator } from "random-avatar-generator";
+import supabaseAdmin from "../utils/supabase_admin";
 
 const generator = new AvatarGenerator();
 
@@ -69,37 +70,75 @@ AuthRoutes.post(
   async (req: Request, res: Response<ResponseConfig>) => {
     const { email, password }: Props = req.body;
 
-    let response = await supabase.auth.signUp({ email: email, password });
-    if (response) {
-      const { data, error } = response;
-      if (data && data.user) {
-        const username = generateUsername("-", 4, 20, "user");
+    let response = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        emailRedirectTo: `https://collab-quotes.vercel.app/auth/verify?email=${email}`,
+      },
+    });
+    const { data, error } = response;
 
-        const userData: UserDataInterface = {
-          username: username,
-          userId: data.user.id,
-          profile_url: generator.generateRandomAvatar(),
-          email: email,
-          createdAt: new Date().getTime(),
-        };
-
-        const responseData = (await supabase.from("users").insert(userData))
-          .data;
-
-        if (responseData) {
-          res.json({
-            status: 200,
-            message: "Account Created",
-          });
-        }
-      } else {
-      }
-    } else {
-      res.json({
-        status: 300,
-        message: "Try again later",
-      });
+    if (error) {
+      console.log(error);
+      res.json({ status: 300, message: error.message });
+      return;
     }
+
+    await supabase
+      .from("pending_verification")
+      .insert({ email: email, userId: data.user?.id });
+
+    res.json({
+      status: 200,
+      message: "SignUp Success",
+    });
+  }
+);
+
+AuthRoutes.get(
+  "/verify_account/:id",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const email = req.params.id;
+
+    if (!email) {
+      res.json({ status: 400, message: "Invalid ID" });
+      return;
+    }
+
+    console.log(`verification for ${email}`)
+
+    const response = (await supabase.from("pending_verification").select("*"))
+      .data as { email: string; userId: string }[];
+    const responseAdmin =  (
+      await supabaseAdmin.auth.admin.getUserById(response[0].userId)
+    ).data;
+    if (!response[0]?.email && !responseAdmin.user) {
+      res.json({ status: 400, message: "User not found" });
+      return;
+    }
+
+    const userData: UserDataInterface = {
+      username: generateUsername("-", 4, 20, "user"),
+      userId: responseAdmin.user?.id || "",
+      profile_url: generator.generateRandomAvatar(),
+      email: responseAdmin.user?.email || "",
+      createdAt: new Date().getTime(),
+    };
+
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert(userData);
+
+    if (insertError) {
+      res.status(500).json({ status: 300, message: "Error creating account" });
+      return;
+    }
+
+    res.json({
+      status: 200,
+      message: "Account Verified Successfully",
+    });
   }
 );
 
