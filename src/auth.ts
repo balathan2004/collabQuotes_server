@@ -96,6 +96,61 @@ AuthRoutes.post(
   }
 );
 
+AuthRoutes.post(
+  "/reset-password",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const { email }: Props = req.body;
+
+    let response = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `https://collab-quotes.vercel.app/auth/change-password?email=${email}`,
+    });
+    const { data, error } = response;
+
+    if (error) {
+      console.log(error);
+      res.json({ status: 300, message: error.message });
+      return;
+    }
+
+    res.json({
+      status: 200,
+      message: "Password Reset Mail sent to inbox",
+    });
+  }
+);
+
+AuthRoutes.post(
+  "/change-password",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const { accessToken, password }: { accessToken: string; password: string } =
+      req.body;
+
+    const user = await supabase.auth.getUser(accessToken);
+    const { data, error } = user;
+
+    if (error) {
+      console.log(error);
+      res.json({ status: 300, message: error.message });
+      return;
+    }
+
+    const updateError = await supabaseAdmin.auth.admin.updateUserById(
+      data.user.id,
+      { password: password }
+    );
+
+    if (updateError) {
+      res.json({ status: 300, message: "Failed to update password." });
+      return;
+    }
+
+    res.json({
+      status: 200,
+      message: "Password Reset Mail sent to inbox",
+    });
+  }
+);
+
 AuthRoutes.get(
   "/verify_account/:id",
   async (req: Request, res: Response<ResponseConfig>) => {
@@ -106,11 +161,12 @@ AuthRoutes.get(
       return;
     }
 
-    console.log(`verification for ${email}`)
+    console.log(`verification for ${email}`);
 
-    const response = (await supabase.from("pending_verification").select("*"))
-      .data as { email: string; userId: string }[];
-    const responseAdmin =  (
+    const response = (
+      await supabase.from("pending_verification").select("*").eq("email", email)
+    ).data as { email: string; userId: string }[];
+    const responseAdmin = (
       await supabaseAdmin.auth.admin.getUserById(response[0].userId)
     ).data;
     if (!response[0]?.email && !responseAdmin.user) {
@@ -129,6 +185,8 @@ AuthRoutes.get(
     const { error: insertError } = await supabase
       .from("users")
       .insert(userData);
+
+    console.log(insertError);
 
     if (insertError) {
       res.status(500).json({ status: 300, message: "Error creating account" });
