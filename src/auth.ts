@@ -125,28 +125,57 @@ AuthRoutes.post(
     const { accessToken, password }: { accessToken: string; password: string } =
       req.body;
 
-    const user = await supabase.auth.getUser(accessToken);
-    const { data, error } = user;
+    // Log incoming data for debugging
+    console.log("Request Body:", req.body);
 
-    if (error) {
-      console.log(error);
-      res.json({ status: 300, message: error.message });
+    // Validate input
+    if (!accessToken || !password) {
+      res
+        .status(400)
+        .json({
+          status: 400,
+          message: "Access token and password are required.",
+        });
       return;
     }
 
-    const updateError = await supabaseAdmin.auth.admin.updateUserById(
-      data.user.id,
-      { password: password }
+    // Retrieve the user using the access token
+    const { data: userData, error: getUserError } = await supabase.auth.getUser(
+      accessToken
     );
 
-    if (updateError) {
-      res.json({ status: 300, message: "Failed to update password." });
+    if (getUserError) {
+      console.error("Error fetching user:", getUserError);
+      res
+        .status(401)
+        .json({ status: 300, message: "Invalid or expired access token." });
       return;
     }
 
-    res.json({
+    if (!userData?.user) {
+      res.status(404).json({ status: 300, message: "User not found." });
+      return;
+    }
+
+    const userId = userData.user.id;
+
+    // Update the user's password using the Admin SDK
+    const { data: updateData, error: updateError } =
+      await supabaseAdmin.auth.admin.updateUserById(userId, { password });
+
+    if (updateError) {
+      console.error("Error updating password:", updateError);
+      res
+        .status(500)
+        .json({ status: 300, message: "Failed to update password." });
+      return;
+    }
+
+    console.log("Password updated successfully for user:", updateData);
+
+    res.status(200).json({
       status: 200,
-      message: "Password Reset Mail sent to inbox",
+      message: "Password successfully updated.",
     });
   }
 );
