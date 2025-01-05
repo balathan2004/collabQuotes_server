@@ -28,39 +28,36 @@ AuthRoutes.post(
   async (req: Request, res: Response<AuthResponseConfig>) => {
     const { email, password }: Props = req.body;
 
-    console.log("requested", email);
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
 
-    if (data && data.user) {
-      const userData = (
-        await supabase.from("users").select("*").eq("email", email)
-      ).data;
-      const checked = userData ? (userData[0] as UserDataInterface) : null;
-
-      if (checked) {
-        res.cookie("collabQuotes_uid", checked.userId, {
-          maxAge: 2592000000,
-          sameSite: "none",
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production" ? true : false,
-        });
-        res.json({
-          status: 200,
-          message: "Logged In",
-          credentials: checked,
-        });
-      }
-    } else {
-      console.log(error);
-
+    if (error) {
       res.json({
         status: 300,
-        message: "Invalid Authentication",
+        message: error.message,
         credentials: null,
+      });
+      return;
+    }
+
+    const userData = (
+      await supabase.from("users").select("*").eq("email", email)
+    ).data;
+    const checked = userData ? (userData[0] as UserDataInterface) : null;
+
+    if (checked) {
+      res.cookie("collabQuotes_uid", checked.userId, {
+        maxAge: 2592000000,
+        sameSite: "none",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" ? true : false,
+      });
+      res.json({
+        status: 200,
+        message: "Logged In",
+        credentials: checked,
       });
     }
   }
