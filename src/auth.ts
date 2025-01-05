@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import supabase from "../utils/supabase_client";
+import { User } from "@supabase/supabase-js";
 
 import {
   AuthResponseConfig,
@@ -70,6 +71,33 @@ AuthRoutes.post(
   async (req: Request, res: Response<ResponseConfig>) => {
     const { email, password }: Props = req.body;
 
+    const checkUserRecord = await supabaseAdmin.auth.admin.listUsers();
+
+    if (checkUserRecord.error) {
+      console.log(checkUserRecord.error.message);
+      res.json({ status: 300, message: checkUserRecord.error.message });
+      return;
+    }
+
+    const recordData = checkUserRecord.data.users.find(
+      (user) => user.email == email
+    );
+
+    if (recordData) {
+      if (recordData.email_confirmed_at) {
+        console.log(recordData.email_confirmed_at);
+        res.json({ status: 300, message: "You already have an account login" });
+        return;
+      } else {
+        console.log(recordData);
+        res.json({
+          status: 200,
+          message: "youre not verified yet , verify email and login",
+        });
+        return;
+      }
+    }
+
     let response = await supabase.auth.signUp({
       email: email,
       password: password,
@@ -91,8 +119,52 @@ AuthRoutes.post(
 
     res.json({
       status: 200,
-      message: "SignUp Success",
+      message: "verification code sent to email, verify email and login",
     });
+  }
+);
+
+AuthRoutes.post(
+  "/request-verification",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const { email }: Props = req.body;
+
+    if (!email) {
+      res.json({ status: 300, message: "invalid email" });
+      return;
+    }
+
+    const checkUserRecord = await supabaseAdmin.auth.admin.listUsers();
+
+    if (checkUserRecord.error) {
+      console.log(checkUserRecord.error.message);
+      res.json({ status: 300, message: checkUserRecord.error.message });
+      return;
+    }
+
+    const recordData = checkUserRecord.data.users.find(
+      (user) => user.email == email
+    );
+
+    if (recordData?.email_confirmed_at) {
+      res.json({ status: 200, message: "your email already verified" });
+      return;
+    }
+
+    const response = await supabaseAdmin.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: `https://collab-quotes.vercel.app/auth/verify?email=${email}`,
+      },
+    });
+
+    if (response.error) {
+      console.log(response.error.message);
+      res.json({ status: 300, message: response.error.message });
+      return;
+    }
+    res.json({ status: 200, message: "verification email sent" });
   }
 );
 
@@ -130,12 +202,10 @@ AuthRoutes.post(
 
     // Validate input
     if (!accessToken || !password) {
-      res
-        .status(400)
-        .json({
-          status: 400,
-          message: "Access token and password are required.",
-        });
+      res.status(400).json({
+        status: 400,
+        message: "Access token and password are required.",
+      });
       return;
     }
 
