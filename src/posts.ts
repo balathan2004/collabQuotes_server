@@ -14,63 +14,75 @@ const uid = new ShortUniqueId({ length: 10 });
 // Create a router instance
 const PostRoutes = Router();
 
-PostRoutes.post("/create_tweet", async (req: Request, res: Response<ResponseConfig>) => {
-  const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
+PostRoutes.post(
+  "/create_tweet",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
 
-  const { quote, author, username } = req.body;
+    const { quote, author, username } = req.body;
 
-  console.log("received ", collabQuotes_uid);
+    console.log("received ", collabQuotes_uid);
 
-  if (collabQuotes_uid && quote && author) {
-    const postData: QuoteInterface = {
-      quote: quote,
-      author: author,
-      quoteId: uid.rnd(),
-      createdAt: new Date().getTime(),
-      userId: collabQuotes_uid,
-      username: username,
-    };
+    if (collabQuotes_uid && quote && author) {
+      const postData: QuoteInterface = {
+        quote: quote,
+        author: author,
+        quoteId: uid.rnd(),
+        createdAt: new Date().getTime(),
+        userId: collabQuotes_uid,
+        username: username,
+      };
 
-    const { data, error } = await supabase.from("posts").insert(postData);
+      const { data, error } = await supabase.from("posts").insert(postData);
 
-    if (data) {
-      res.json({
-        status: 200,
-        message: "Quote Added",
-      });
+      if (data) {
+        res.json({
+          status: 200,
+          message: "Quote Added",
+        });
+      } else {
+        res.json({
+          status: 300,
+          message: "Post failed",
+        });
+      }
     } else {
       res.json({
         status: 300,
         message: "Post failed",
       });
     }
-  } else {
-    res.json({
-      status: 300,
-      message: "Post failed",
-    });
   }
-});
+);
 
 PostRoutes.get(
   "/get_posts",
   async (req: Request, res: Response<PostResponseConfig>) => {
-    const usersData = (await supabase.from("users").select("*"))
-      .data as UserDataInterface[];
-    const data = (await supabase.from("posts").select("*"))
-      .data as QuoteInterface[];
+   
+    const page = parseInt(req.query.page as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const startIndex = page * limit;
+    const endIndex = startIndex + limit;
 
+    console.log("req for page and limit", page ,"   ", limit)
+
+    const usersData = (await supabase.from("users").select("*")).data as UserDataInterface[];
+    const data = (await supabase.from("posts").select("*")).data as QuoteInterface[];
+    
     const merged: QuotesInterfaceWithProfile[] = data.map((post) => {
       const currentUserData = usersData.filter(
         (item) => item.userId == post.userId
       );
       return { ...post, profile_url: currentUserData[0].profile_url };
     });
+    
+    const paginatedPosts = merged.reverse().slice(startIndex, endIndex);
 
-    if (merged) {
-      console.log(data);
-      res.json({ status: 200, message: "", quotes: merged });
-    }
+    res.json({
+      status: 200,
+      message: "fetch success",
+      quotes: paginatedPosts,
+    });
   }
 );
 
