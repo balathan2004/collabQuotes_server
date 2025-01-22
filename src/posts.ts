@@ -17,13 +17,14 @@ const PostRoutes = Router();
 PostRoutes.post(
   "/create_tweet",
   async (req: Request, res: Response<ResponseConfig>) => {
-    const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
+    const collabQuotes_uid: string =
+      req.cookies?.collabQuotes_uid || req.body.userId || "";
 
     const { quote, author, username } = req.body;
 
     console.log("received ", collabQuotes_uid);
 
-    if (collabQuotes_uid && quote && author) {
+    if (collabQuotes_uid && quote && author && username) {
       const postData: QuoteInterface = {
         quote: quote,
         author: author,
@@ -58,24 +59,27 @@ PostRoutes.post(
 PostRoutes.get(
   "/get_posts",
   async (req: Request, res: Response<PostResponseConfig>) => {
-   
+    console.log("Page requested");
+
     const page = parseInt(req.query.page as string) || 0;
     const limit = parseInt(req.query.limit as string) || 10;
     const startIndex = page * limit;
     const endIndex = startIndex + limit;
 
-    console.log("req for page and limit", page ,"   ", limit)
+    console.log("req for page and limit", page, "   ", limit);
 
-    const usersData = (await supabase.from("users").select("*")).data as UserDataInterface[];
-    const data = (await supabase.from("posts").select("*")).data as QuoteInterface[];
-    
+    const usersData = (await supabase.from("users").select("*"))
+      .data as UserDataInterface[];
+    const data = (await supabase.from("posts").select("*"))
+      .data as QuoteInterface[];
+
     const merged: QuotesInterfaceWithProfile[] = data.map((post) => {
       const currentUserData = usersData.filter(
         (item) => item.userId == post.userId
       );
       return { ...post, profile_url: currentUserData[0].profile_url };
     });
-    
+
     const paginatedPosts = merged.reverse().slice(startIndex, endIndex);
 
     res.json({

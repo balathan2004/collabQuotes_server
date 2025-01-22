@@ -13,6 +13,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://collab-quotes.vercel.app",
+  "http://localhost:8081"
 ];
 app.use(cookieParser());
 app.use(express.json());
