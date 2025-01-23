@@ -20,9 +20,6 @@ The **CollabQuotes Server** handles all backend functionality, including API end
 
 ## Link to the App
 
-Check out the live app here: `#https://collab-quotes.vercel.app/about`  
-_(Replace `#` with the actual link to the app.)_
+Check out the live app here: [Visit CollabQuotes](https://collab-quotes.vercel.app/about)
+  
 
----
-
-Let me know if you'd like more details or additional sections!
