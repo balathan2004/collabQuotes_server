@@ -1,6 +1,3 @@
-Here’s an updated version of the **CollabQuotes Server** README with a section to include the link to the app:
-
----
 
 # CollabQuotes Server
 
@@ -23,7 +20,7 @@ The **CollabQuotes Server** handles all backend functionality, including API end
 
 ## Link to the App
 
-Check out the live app here: `https://collab-quotes.vercel.app/about`  
+Check out the live app here: `#https://collab-quotes.vercel.app/about`  
 _(Replace `#` with the actual link to the app.)_
 
 ---
