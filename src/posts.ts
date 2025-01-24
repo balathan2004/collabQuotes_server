@@ -20,38 +20,80 @@ PostRoutes.post(
     const collabQuotes_uid: string =
       req.cookies?.collabQuotes_uid || req.body.userId || "";
 
+    console.log(req.body);
+
     const { quote, author, username } = req.body;
 
     console.log("received ", collabQuotes_uid);
 
-    if (collabQuotes_uid && quote && author && username) {
-      const postData: QuoteInterface = {
-        quote: quote,
-        author: author,
-        quoteId: uid.rnd(),
-        createdAt: new Date().getTime(),
-        userId: collabQuotes_uid,
-        username: username,
-      };
+    if (!collabQuotes_uid) {
+      res.json({
+        status: 400,
+        message: "User ID is missing or invalid.",
+      });
+      return;
+    }
 
+    if (!quote || typeof quote !== "string") {
+      res.json({
+        status: 400,
+        message: "Quote is missing or invalid.",
+      });
+      return;
+    }
+
+    if (!author || typeof author !== "string") {
+      res.json({
+        status: 400,
+        message: "Author is missing or invalid.",
+      });
+      return;
+    }
+
+    if (!username || typeof username !== "string") {
+      res.json({
+        status: 400,
+        message: "Username is missing or invalid.",
+      });
+      return;
+    }
+
+    const postData: QuoteInterface = {
+      quote: quote,
+      author: author,
+      quoteId: uid.rnd(),
+      createdAt: new Date().getTime(),
+      userId: collabQuotes_uid,
+      username: username,
+    };
+
+    try {
+      // Insert data into the database
       const { data, error } = await supabase.from("posts").insert(postData);
 
-      if (data) {
-        res.json({
-          status: 200,
-          message: "Quote Added",
-        });
-      } else {
+      if (error) {
+        console.error("Database error:", error);
         res.json({
           status: 300,
-          message: "Post failed",
+          message: "Failed to add the quote. Please try again later.",
         });
+        return;
       }
-    } else {
+
+      if (data) {
+        res.status(200).json({
+          status: 200,
+          message: "Quote added successfully.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
       res.json({
         status: 300,
-        message: "Post failed",
+        message: "An unexpected error occurred.",
       });
+      return;
     }
   }
 );
