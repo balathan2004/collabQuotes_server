@@ -40,7 +40,7 @@ AuthRoutes.post(
           maxAge: 2592000000,
           sameSite: "none",
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production" ? true : false,
+          secure: process.env.NODE_ENV === "production" ,
         });
         res.json({
           status: 200,
@@ -126,7 +126,6 @@ AuthRoutes.post(
   async (req: Request, res: Response<ResponseConfig>) => {
     const { email }: Props = req.body;
 
-   
     let response = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `https://collab-quotes.vercel.app/auth/change-password?email=${email}`,
     });
@@ -150,9 +149,6 @@ AuthRoutes.post(
   async (req: Request, res: Response<ResponseConfig>) => {
     const { accessToken, password }: { accessToken: string; password: string } =
       req.body;
-
-
-
 
     // Log incoming data for debugging
     console.log("Request Body:", req.body);
@@ -207,8 +203,6 @@ AuthRoutes.post(
   }
 );
 
-
-
 AuthRoutes.get(
   "/login_cred",
   async (req: Request, res: Response<AuthResponseConfig>) => {
@@ -244,7 +238,6 @@ AuthRoutes.get(
     }
   }
 );
-
 
 // AuthRoutes.get(
 //   "/verify_account/:id",
@@ -294,6 +287,5 @@ AuthRoutes.get(
 //     });
 //   }
 // );
-
 
 export default AuthRoutes;

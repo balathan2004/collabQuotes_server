@@ -68,22 +68,18 @@ PostRoutes.post(
     };
 
     try {
-      // Insert data into the database
-      const { data, error } = await supabase.from("posts").insert(postData);
+      res.json({
+        status: 200,
+        message: "Quote sent for processing",
+      });
+
+      const { error } = await supabase.from("posts").insert(postData);
 
       if (error) {
         console.error("Database error:", error);
         res.json({
           status: 300,
           message: "Failed to add the quote. Please try again later.",
-        });
-        return;
-      }
-
-      if (data) {
-        res.status(200).json({
-          status: 200,
-          message: "Quote added successfully.",
         });
         return;
       }
