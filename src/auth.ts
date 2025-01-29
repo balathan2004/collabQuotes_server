@@ -129,7 +129,7 @@ AuthRoutes.post(
     let response = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `https://collab-quotes.vercel.app/auth/change-password?email=${email}`,
     });
-    const { data, error } = response;
+    const {  error } = response;
 
     if (error) {
       console.log(error);

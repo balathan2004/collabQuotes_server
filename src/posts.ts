@@ -94,6 +94,62 @@ PostRoutes.post(
   }
 );
 
+PostRoutes.post(
+  "/delete_post",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const collabQuotes_uid: string =
+      req.cookies?.collabQuotes_uid || req.body.userId || "";
+
+    const { quoteId, collabQuoteUid } = req.body;
+
+    console.log("received ", collabQuotes_uid);
+
+    if (!collabQuotes_uid) {
+      res.json({
+        status: 400,
+        message: "User ID is missing or invalid.",
+      });
+      return;
+    }
+
+    if (!quoteId || typeof quoteId !== "string") {
+      res.json({
+        status: 400,
+        message: "Quote is missing or invalid.",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("quoteId", quoteId);
+
+      if (error) {
+        console.error("Unexpected error:", error);
+        res.json({
+          status: 300,
+          message: "An unexpected error occurred.",
+        });
+        return;
+      }
+
+      res.json({
+        status: 200,
+        message: "Quote Deleted ",
+      });
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      res.json({
+        status: 300,
+        message: "An unexpected error occurred.",
+      });
+      return;
+    }
+  }
+);
+
 PostRoutes.get(
   "/get_posts",
   async (req: Request, res: Response<PostResponseConfig>) => {
