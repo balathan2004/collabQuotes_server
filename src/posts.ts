@@ -97,12 +97,11 @@ PostRoutes.post(
 PostRoutes.post(
   "/delete_post",
   async (req: Request, res: Response<ResponseConfig>) => {
+    console.log(req.body);
     const collabQuotes_uid: string =
       req.cookies?.collabQuotes_uid || req.body.userId || "";
 
-    const { quoteId, collabQuoteUid } = req.body;
-
-    console.log("received ", collabQuotes_uid);
+    const { quoteId } = req.body;
 
     if (!collabQuotes_uid) {
       res.json({
