@@ -111,7 +111,7 @@ PostRoutes.post(
       return;
     }
 
-    if (!quoteId || typeof quoteId !== "string") {
+    if (!quoteId) {
       res.json({
         status: 400,
         message: "Quote is missing or invalid.",
