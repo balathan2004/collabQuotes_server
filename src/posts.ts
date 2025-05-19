@@ -183,4 +183,18 @@ PostRoutes.get(
   }
 );
 
+PostRoutes.get("/get_one_random", async (req: Request, res: Response) => {
+  try {
+    const data = (await supabase.from("posts").select("*"))
+      .data as QuoteInterface[];
+
+    const randomQuote = data[Math.floor(Math.random() * data.length)];
+
+    res.json({ message: "success", status: 200, quote: randomQuote });
+  } catch (e) {
+    console.log(e);
+    res.json({ message: "error", status: 300, quote: "" });
+  }
+});
+
 export default PostRoutes;
