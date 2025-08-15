@@ -6,6 +6,7 @@ import AdminRoutes from "./src/admin";
 import PostRoutes from "./src/posts";
 import AuthRoutes from "./src/auth";
 import ProfileRoutes from "./src/profile";
+import jwt from "jsonwebtoken";
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,29 @@ app.use(
     credentials: true,
   })
 );
+
+
+
+
+
+async function authenticateToken(req: Request, res: Response, next: any) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
+    if (err) {
+      return res.status(403).json({
+        success: false,
+        message: "Auth Token Not found",
+      });
+    } else {
+      next();
+    }
+
+    // userId and username from JWT payload
+    return;
+  });
+}
 
 app.use("/auth", AuthRoutes);
 app.use("/admin", AdminRoutes);

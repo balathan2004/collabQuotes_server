@@ -6,6 +6,8 @@ import {
   ResponseConfig,
   UserDataInterface,
 } from "../utils/interfaces";
+import jwt from "jsonwebtoken";
+
 import { generateUsername } from "unique-username-generator";
 import { AvatarGenerator } from "random-avatar-generator";
 import supabaseAdmin from "../utils/supabase_admin";
@@ -16,6 +18,21 @@ interface Props {
   email: string;
   password: string;
 }
+
+
+
+function generateAccessToken(user:UserDataInterface
+) {
+    return jwt.sign(user, process.env.JWT_SECRET || "", { expiresIn:"60M" });
+}
+
+// Generate Refresh Token
+function generateRefreshToken(user:UserDataInterface
+) {
+    return jwt.sign(user, process.env.JWT_SECRET || "", { expiresIn:"15D" });
+}
+
+
 
 AuthRoutes.post(
   "/login",
@@ -30,31 +47,37 @@ AuthRoutes.post(
     });
 
     if (data && data.user) {
-      const userData = (
-        await supabase.from("users").select("*").eq("email", email)
-      ).data;
-      const checked = userData ? (userData[0] as UserDataInterface) : null;
+      const userData =
+        ((
+          await supabase
+            .from("users")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle()
+        ).data as UserDataInterface) || null;
 
-      if (checked) {
-        res.cookie("collabQuotes_uid", checked.userId, {
-          maxAge: 2592000000,
-          sameSite: "none",
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production" ,
-        });
+      if (!userData) {
         res.json({
-          status: 200,
-          message: "Logged In",
-          credentials: checked,
+          status: 300,
+          message: "Invalid Authentication",
+          credentials: null,
         });
+        return;
       }
-    } else {
-      console.log(error);
 
+      const accessToken=generateAccessToken(userData)
+      const refreshToken=generateRefreshToken(userData)
+
+      // res.cookie("collabQuotes_uid", checked.userId, {
+      //   maxAge: 2592000000,
+      //   sameSite: "none",
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === "production" ,
+      // });
       res.json({
-        status: 300,
-        message: "Invalid Authentication",
-        credentials: null,
+        status: 200,
+        message: "Logged In",
+        credentials: userData,
       });
     }
   }
@@ -129,7 +152,7 @@ AuthRoutes.post(
     let response = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `https://collab-quotes.vercel.app/auth/change-password?email=${email}`,
     });
-    const {  error } = response;
+    const { error } = response;
 
     if (error) {
       console.log(error);
