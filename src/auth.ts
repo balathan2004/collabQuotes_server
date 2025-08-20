@@ -19,27 +19,22 @@ interface Props {
   password: string;
 }
 
+const JWT_TOKEN = process.env.JWT_SECRET || "";
 
-
-function generateAccessToken(user:UserDataInterface
-) {
-    return jwt.sign(user, process.env.JWT_SECRET || "", { expiresIn:"60M" });
+function generateAccessToken(user: UserDataInterface) {
+  return jwt.sign(user, JWT_TOKEN, { expiresIn: "60M" });
 }
 
 // Generate Refresh Token
-function generateRefreshToken(user:UserDataInterface
-) {
-    return jwt.sign(user, process.env.JWT_SECRET || "", { expiresIn:"15D" });
+function generateRefreshToken(user: UserDataInterface) {
+  return jwt.sign(user, JWT_TOKEN, { expiresIn: "15D" });
 }
-
-
 
 AuthRoutes.post(
   "/login",
   async (req: Request, res: Response<AuthResponseConfig>) => {
     const { email, password }: Props = req.body;
-
-    console.log("requested", email);
+    console.log("email: ", email);
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -65,19 +60,19 @@ AuthRoutes.post(
         return;
       }
 
-      const accessToken=generateAccessToken(userData)
-      const refreshToken=generateRefreshToken(userData)
+      const accessToken = generateAccessToken(userData);
+      const refreshToken = generateRefreshToken(userData);
 
-      // res.cookie("collabQuotes_uid", checked.userId, {
-      //   maxAge: 2592000000,
-      //   sameSite: "none",
-      //   httpOnly: true,
-      //   secure: process.env.NODE_ENV === "production" ,
-      // });
+      res.cookie("collabQuotes_refreshToken", refreshToken, {
+        maxAge: 2592000000,
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production",
+      });
       res.json({
         status: 200,
         message: "Logged In",
-        credentials: userData,
+        credentials: { ...userData, accessToken: accessToken },
       });
     }
   }
@@ -226,41 +221,67 @@ AuthRoutes.post(
   }
 );
 
-AuthRoutes.get(
-  "/login_cred",
-  async (req: Request, res: Response<AuthResponseConfig>) => {
-    const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
+AuthRoutes.get("/refresh", async (req: Request, res: Response<any>) => {
+  const refreshToken = req.cookies?.collabQuotes_refreshToken;
+  // console.log("refreshToken: ", refreshToken);
 
-    console.log("login cred req", collabQuotes_uid);
+  if (!refreshToken) {
+    console.log("token not found");
 
-    if (collabQuotes_uid) {
-      const userData = (
-        await supabase.from("users").select("*").eq("userId", collabQuotes_uid)
-      ).data;
-      const checked = userData ? (userData[0] as UserDataInterface) : null;
-
-      if (checked) {
-        res.json({
-          status: 200,
-          message: "Logged In",
-          credentials: checked,
-        });
-      } else {
-        res.json({
-          status: 300,
-          message: "Invalid Authentication",
-          credentials: null,
-        });
-      }
-    } else {
-      res.json({
-        status: 300,
-        message: "No Uid Found",
-        credentials: null,
-      });
-    }
+    res
+      .status(401)
+      .json({ message: "unauthorized", credentials: null, status: 300 });
+    return;
   }
-);
+
+  jwt.verify(refreshToken, JWT_TOKEN, (err: any, user: any) => {
+    if (err) {
+      console.log("err: ", err);
+
+      return res.sendStatus(403);
+    }
+
+    const newAccessToken = jwt.sign({ user }, JWT_TOKEN, {
+      expiresIn: "15m",
+    });
+    res.json({ accessToken: newAccessToken, credentials: user });
+  });
+});
+
+AuthRoutes.get("/ping", async (req: Request, res: Response<any>) => {
+  res.json({ message: "just for ping " });
+
+  // route for dummy response so that fetch accesstoken in redux logic
+});
+
+// AuthRoutes.get(
+//   "/login_cred",
+//   async (req: Request, res: Response<AuthResponseConfig>) => {
+//     const authHeader = req.headers.authorization || "";
+
+//     console.log(authHeader);
+
+//     const token = authHeader.split(" ")[1];
+
+//     if (!token) {
+//       console.log("token not found");
+
+//       res
+//         .status(401)
+//         .json({ message: "unauthorized", credentials: null, status: 300 });
+//       return;
+//     }
+
+//     jwt.verify(token, JWT_TOKEN, (err: any, user: any) => {
+//       if (err) {
+//         console.log("err: ", err);
+
+//         return res.sendStatus(403);
+//       }
+//       res.json(...user);
+//     });
+//   }
+// );
 
 // AuthRoutes.get(
 //   "/verify_account/:id",

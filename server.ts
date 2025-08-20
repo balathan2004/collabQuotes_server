@@ -32,7 +32,9 @@ app.use(
 
 async function authenticateToken(req: Request, res: Response, next: any) {
   const authHeader = req.headers.authorization || "";
+
   const token = authHeader.split(" ")[1];
+  console.log('token: ', token);
 
   jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
     if (err) {
