@@ -51,6 +51,14 @@ ProfileRoutes.get(
   async (req: Request, res: Response<ProfileResponseCofig>) => {
     const collabQuotes_uid: string = req.cookies?.collabQuotes_uid || "";
 
+    // console.log({req})
+
+    const authHeader = req.headers.authorization || "";
+
+  const token = authHeader.split(" ")[1];
+  console.log('token: ', token);
+
+
     if (collabQuotes_uid) {
       const id = collabQuotes_uid;
 
@@ -83,5 +91,9 @@ ProfileRoutes.get(
     }
   }
 );
+
+
+
+
 
 export default ProfileRoutes;
