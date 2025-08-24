@@ -1,7 +1,8 @@
-import { Response } from "express";
+import { Request,Response } from "express";
 import jwt from "jsonwebtoken";
+import { JwtRequest } from "./interfaces";
 
-export function verifyToken(token:string,res:Response,next:any){
+export function verifyToken(token:string,req:JwtRequest,res:Response,next:any){
  jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
     if (err) {
       return res.status(403).json({
@@ -9,7 +10,8 @@ export function verifyToken(token:string,res:Response,next:any){
         message: "Auth Token Not found",
       });
     } else {
-      return user
+      req.jwt=user as any;
+    
       next();
     }
 
@@ -17,5 +19,3 @@ export function verifyToken(token:string,res:Response,next:any){
     return;
   });
 }
-
-

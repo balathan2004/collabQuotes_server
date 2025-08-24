@@ -3,13 +3,13 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./types"],
+    "typeRoots": ["./node_modules/@types", "./src/types"],
     "rootDir": "./",
     "outDir": "./build",
     "esModuleInterop": true,
     "strict": true,
     "sourceMap": true
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*", "src/types/express.d.ts"],
   "exclude": ["node_modules", "build"]
 }

@@ -31,7 +31,7 @@
     "typescript": "^5.7.2"
   },
   "scripts": {
-    "dev": "nodemon server.ts",
+    "dev": "nodemon --watch ./ --exec ts-node --files server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },

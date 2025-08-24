@@ -1,3 +1,6 @@
+import { Request } from "express";
+import { JwtPayload } from "jsonwebtoken";
+
 export interface ResponseConfig {
   status: 200 | 300 | 400;
   message: string;
@@ -10,6 +13,10 @@ export interface AuthResponseConfig extends ResponseConfig {
 export interface ProfileResponseCofig extends ResponseConfig {
   userData: UserDataInterface | null;
   userPosts: QuoteInterface[] | [];
+}
+
+export interface JwtRequest extends Request{
+  jwt:any
 }
 
 export interface UserDataInterface {

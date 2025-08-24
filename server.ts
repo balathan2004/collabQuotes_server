@@ -6,8 +6,8 @@ import AdminRoutes from "./src/admin";
 import PostRoutes from "./src/posts";
 import AuthRoutes from "./src/auth";
 import ProfileRoutes from "./src/profile";
+// import { verifyToken } from "./utils/jwt_utils";
 import jwt from "jsonwebtoken";
-import { verifyToken } from "./utils/jwt_utils";
 dotenv.config();
 
 const app = express();
@@ -32,11 +32,33 @@ app.use(
 
 
 
+export function verifyToken(token:string,req:Request,res:Response,next:any){
+ jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
+    if (err) {
+      return res.status(403).json({
+        success: false,
+        message: "Auth Token Not found",
+      });
+    } else {
+      req.jwt=user as any;
+    
+      next();
+    }
+
+    // userId and username from JWT payload
+    return;
+  });
+}
+
+
+
 async function authenticateToken(req: Request, res: Response, next: any) {
   
+  console.log("auth token hit")
+
   const authHeader = req.headers.authorization || "";
   const token = authHeader.split(" ")[1];
-  verifyToken(token,res,next);
+  verifyToken(token,req,res,next);
 
 }
 
