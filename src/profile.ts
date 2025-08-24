@@ -47,13 +47,7 @@ ProfileRoutes.get(
 ProfileRoutes.get(
   "/my_profile",
   async (req: Request, res: Response<ProfileResponseCofig>) => {
-    console.log("myprofile hit");
-
-
-
     const uid = req.jwt.user.userId || "";
-
-    console.log(req.jwt.user);
 
     if (uid) {
       const userPosts = (
@@ -67,8 +61,8 @@ ProfileRoutes.get(
         userPosts: userPosts,
       });
     } else {
-      res.json({
-        message: "dijej",
+      res.status(401).json({
+        message: "error caught",
         status: 300,
         userData: null,
         userPosts: [],

@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { JwtPayload } from "jsonwebtoken";
+
 
 export interface ResponseConfig {
   status: 200 | 300 | 400;

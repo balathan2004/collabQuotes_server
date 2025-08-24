@@ -24,24 +24,25 @@ app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-      allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-
-
-
-
-export function verifyToken(token:string,req:Request,res:Response,next:any){
- jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
+export function verifyToken(
+  token: string,
+  req: Request,
+  res: Response,
+  next: any
+) {
+  jwt.verify(token, process.env.JWT_SECRET || "", (err, user: any) => {
     if (err) {
       return res.status(403).json({
         success: false,
         message: "Auth Token Not found",
       });
     } else {
-      req.jwt=user as any;
-    
+      req.jwt = user as any;
+
       next();
     }
 
@@ -50,22 +51,16 @@ export function verifyToken(token:string,req:Request,res:Response,next:any){
   });
 }
 
-
-
 async function authenticateToken(req: Request, res: Response, next: any) {
-  
-  console.log("auth token hit")
-
   const authHeader = req.headers.authorization || "";
   const token = authHeader.split(" ")[1];
-  verifyToken(token,req,res,next);
-
+  verifyToken(token, req, res, next);
 }
 
 app.use("/auth", AuthRoutes);
 app.use("/admin", AdminRoutes);
-app.use("/profile",authenticateToken, ProfileRoutes);
-app.use("/posts", PostRoutes);
+app.use("/profile", authenticateToken, ProfileRoutes);
+app.use("/posts", authenticateToken, PostRoutes);
 
 app.get("/hello", async (req: Request, res: Response) => {
   res.json({

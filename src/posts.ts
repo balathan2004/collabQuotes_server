@@ -14,25 +14,20 @@ const uid = new ShortUniqueId({ length: 10 });
 // Create a router instance
 const PostRoutes = Router();
 
-PostRoutes.post(
-  "/create_tweet",
-  async (req: Request, res: Response<ResponseConfig>) => {
-    const collabQuotes_uid: string =
-      req.cookies?.collabQuotes_uid || req.body.userId || "";
+PostRoutes.post("/", async (req: Request, res: Response<unknown>) => {
 
-    console.log(req.body);
+  console.log({req});
 
+
+  const user = req.jwt.user as UserDataInterface;
+
+  if (!user.userId) {
+    res.status(401).json({ status: 400, message: "un authorised" });
+    return;
+  }
+
+  if (req.method == "POST") {
     const { quote, author, username } = req.body;
-
-    console.log("received ", collabQuotes_uid);
-
-    if (!collabQuotes_uid) {
-      res.json({
-        status: 400,
-        message: "User ID is missing or invalid.",
-      });
-      return;
-    }
 
     if (!quote || typeof quote !== "string") {
       res.json({
@@ -63,7 +58,7 @@ PostRoutes.post(
       author: author,
       quoteId: uid.rnd(),
       createdAt: new Date().getTime(),
-      userId: collabQuotes_uid,
+      userId: user.userId,
       username: username,
     };
 
@@ -92,27 +87,19 @@ PostRoutes.post(
       return;
     }
   }
-);
 
-PostRoutes.post(
-  "/delete_post",
-  async (req: Request, res: Response<ResponseConfig>) => {
-    console.log(req.body);
-    const collabQuotes_uid: string =
-      req.cookies?.collabQuotes_uid || req.body.userId || "";
+  if (req.method == "DELETE") {
 
-    const { quoteId } = req.body;
+    console.log("delete hit");
 
-    if (!collabQuotes_uid) {
-      res.json({
-        status: 400,
-        message: "User ID is missing or invalid.",
-      });
-      return;
-    }
+    const { quoteId } = req.params;
+
+    console.log(req.query);
+
+    console.log("params",req.params);
 
     if (!quoteId) {
-      res.json({
+      res.status(401).json({
         status: 400,
         message: "Quote is missing or invalid.",
       });
@@ -134,20 +121,49 @@ PostRoutes.post(
         return;
       }
 
-      res.json({
+      res.status(200).json({
         status: 200,
         message: "Quote Deleted ",
       });
     } catch (error) {
       console.error("Unexpected error:", error);
-      res.json({
-        status: 300,
+      res.status(400).json({
+        status: 400,
         message: "An unexpected error occurred.",
       });
       return;
     }
   }
-);
+
+  if (req.method == "GET") {
+    const page = parseInt(req.query.page as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const startIndex = page * limit;
+    const endIndex = startIndex + limit;
+
+    console.log("req for page and limit", page, "   ", limit);
+
+    const usersData = (await supabase.from("users").select("*"))
+      .data as UserDataInterface[];
+    const data = (await supabase.from("posts").select("*"))
+      .data as QuoteInterface[];
+
+    const merged: QuotesInterfaceWithProfile[] = data.map((post) => {
+      const currentUserData = usersData.filter(
+        (item) => item.userId == post.userId
+      );
+      return { ...post, profile_url: currentUserData[0].profile_url };
+    });
+
+    const paginatedPosts = merged.reverse().slice(startIndex, endIndex);
+
+    res.json({
+      status: 200,
+      message: "fetch success",
+      quotes: paginatedPosts,
+    });
+  }
+});
 
 PostRoutes.get(
   "/get_posts",
