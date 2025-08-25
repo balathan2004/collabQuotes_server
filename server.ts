@@ -6,6 +6,7 @@ import AdminRoutes from "./src/admin";
 import PostRoutes from "./src/posts";
 import AuthRoutes from "./src/auth";
 import ProfileRoutes from "./src/profile";
+import PublicRoutes from "./src/public";
 // import { verifyToken } from "./utils/jwt_utils";
 import jwt from "jsonwebtoken";
 dotenv.config();
@@ -61,6 +62,7 @@ app.use("/auth", AuthRoutes);
 app.use("/admin", AdminRoutes);
 app.use("/profile", authenticateToken, ProfileRoutes);
 app.use("/posts", authenticateToken, PostRoutes);
+app.use("/public", PublicRoutes);
 
 app.get("/hello", async (req: Request, res: Response) => {
   res.json({

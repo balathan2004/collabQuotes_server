@@ -26,7 +26,7 @@ PostRoutes.use("/", async (req: Request, res: Response<unknown>) => {
     const { quote, author, username } = req.body;
 
     if (!quote || typeof quote !== "string") {
-      res.json({
+      res.status(400).json({
         status: 400,
         message: "Quote is missing or invalid.",
       });
@@ -34,7 +34,7 @@ PostRoutes.use("/", async (req: Request, res: Response<unknown>) => {
     }
 
     if (!author || typeof author !== "string") {
-      res.json({
+      res.status(400).json({
         status: 400,
         message: "Author is missing or invalid.",
       });
@@ -42,7 +42,7 @@ PostRoutes.use("/", async (req: Request, res: Response<unknown>) => {
     }
 
     if (!username || typeof username !== "string") {
-      res.json({
+      res.status(400).json({
         status: 400,
         message: "Username is missing or invalid.",
       });
@@ -59,24 +59,33 @@ PostRoutes.use("/", async (req: Request, res: Response<unknown>) => {
     };
 
     try {
-      res.json({
-        status: 200,
-        message: "Quote sent for processing",
-      });
-
       const { error } = await supabase.from("posts").insert(postData);
 
       if (error) {
         console.error("Database error:", error);
-        res.json({
+
+        if (error.code == "23505") {
+          res.status(400).json({
+            status: 300,
+            message: "Quote Already Exist",
+          });
+          return;
+        }
+
+        res.status(500).json({
           status: 300,
           message: "Failed to add the quote. Please try again later.",
         });
         return;
       }
+
+      res.status(200).json({
+        status: 200,
+        message: "Quote Added",
+      });
     } catch (error) {
       console.error("Unexpected error:", error);
-      res.json({
+      res.status(500).json({
         status: 300,
         message: "An unexpected error occurred.",
       });
