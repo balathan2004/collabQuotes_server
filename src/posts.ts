@@ -14,11 +14,7 @@ const uid = new ShortUniqueId({ length: 10 });
 // Create a router instance
 const PostRoutes = Router();
 
-PostRoutes.post("/", async (req: Request, res: Response<unknown>) => {
-
-  console.log({req});
-
-
+PostRoutes.use("/", async (req: Request, res: Response<unknown>) => {
   const user = req.jwt.user as UserDataInterface;
 
   if (!user.userId) {
@@ -89,14 +85,7 @@ PostRoutes.post("/", async (req: Request, res: Response<unknown>) => {
   }
 
   if (req.method == "DELETE") {
-
-    console.log("delete hit");
-
-    const { quoteId } = req.params;
-
-    console.log(req.query);
-
-    console.log("params",req.params);
+    const { quoteId } = req.query;
 
     if (!quoteId) {
       res.status(401).json({
