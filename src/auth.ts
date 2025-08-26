@@ -36,6 +36,15 @@ AuthRoutes.post(
     const { email, password }: Props = req.body;
     console.log("email: ", email);
 
+    if (!email || !password) {
+      res.status(400).json({
+        status: 300,
+        message: "Invalid Authentication",
+        credentials: null,
+        accessToken:""
+      });
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -56,6 +65,7 @@ AuthRoutes.post(
           status: 300,
           message: "Invalid Authentication",
           credentials: null,
+          accessToken:""
         });
         return;
       }
@@ -72,7 +82,8 @@ AuthRoutes.post(
       res.json({
         status: 200,
         message: "Logged In",
-        credentials: { ...userData, accessToken: accessToken },
+        credentials: { ...userData },
+        accessToken:accessToken
       });
     }
   }
@@ -221,7 +232,7 @@ AuthRoutes.post(
   }
 );
 
-AuthRoutes.get("/refresh", async (req: Request, res: Response<any>) => {
+AuthRoutes.get("/refresh", async (req: Request, res: Response<AuthResponseConfig>) => {
   const refreshToken = req.cookies?.collabQuotes_refreshToken;
   // console.log("refreshToken: ", refreshToken);
 
@@ -230,7 +241,7 @@ AuthRoutes.get("/refresh", async (req: Request, res: Response<any>) => {
 
     res
       .status(401)
-      .json({ message: "unauthorized", credentials: null, status: 300 });
+      .json({ message: "unauthorized", credentials: null, status: 300,accessToken:"" });
     return;
   }
 
@@ -244,7 +255,7 @@ AuthRoutes.get("/refresh", async (req: Request, res: Response<any>) => {
     const newAccessToken = jwt.sign({ user }, JWT_TOKEN, {
       expiresIn: "15m",
     });
-    res.json({ accessToken: newAccessToken, credentials: user });
+    res.json({ accessToken: newAccessToken, credentials: user,status:200,message:"success" });
   });
 });
 

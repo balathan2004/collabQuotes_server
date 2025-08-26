@@ -7,7 +7,8 @@ export interface ResponseConfig {
 }
 
 export interface AuthResponseConfig extends ResponseConfig {
-  credentials: UserDataInterface & {accessToken:string}|null;
+  credentials: UserDataInterface |null ;
+  accessToken:string
 }
 
 export interface ProfileResponseCofig extends ResponseConfig {
