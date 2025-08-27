@@ -41,7 +41,7 @@ AuthRoutes.post(
         status: 300,
         message: "Invalid Authentication",
         credentials: null,
-        accessToken:""
+        accessToken: "",
       });
     }
 
@@ -65,7 +65,7 @@ AuthRoutes.post(
           status: 300,
           message: "Invalid Authentication",
           credentials: null,
-          accessToken:""
+          accessToken: "",
         });
         return;
       }
@@ -83,7 +83,7 @@ AuthRoutes.post(
         status: 200,
         message: "Logged In",
         credentials: { ...userData },
-        accessToken:accessToken
+        accessToken: accessToken,
       });
     }
   }
@@ -232,67 +232,62 @@ AuthRoutes.post(
   }
 );
 
-AuthRoutes.get("/refresh", async (req: Request, res: Response<AuthResponseConfig>) => {
-  const refreshToken = req.cookies?.collabQuotes_refreshToken;
-  // console.log("refreshToken: ", refreshToken);
+AuthRoutes.get(
+  "/refresh",
+  async (req: Request, res: Response<AuthResponseConfig>) => {
+    const refreshToken = req.cookies?.collabQuotes_refreshToken;
+    // console.log("refreshToken: ", refreshToken);
 
-  if (!refreshToken) {
-    console.log("token not found");
+    if (!refreshToken) {
+      console.log("token not found");
 
-    res
-      .status(401)
-      .json({ message: "unauthorized", credentials: null, status: 300,accessToken:"" });
-    return;
-  }
-
-  jwt.verify(refreshToken, JWT_TOKEN, (err: any, user: any) => {
-    if (err) {
-      console.log("err: ", err);
-
-      return res.sendStatus(403);
+      res
+        .status(401)
+        .json({
+          message: "unauthorized",
+          credentials: null,
+          status: 300,
+          accessToken: "",
+        });
+      return;
     }
 
-    const newAccessToken = jwt.sign({ user }, JWT_TOKEN, {
-      expiresIn: "15m",
+    jwt.verify(refreshToken, JWT_TOKEN, (err: any, user: any) => {
+      if (err) {
+        console.log("err: ", err);
+
+        return res.sendStatus(403);
+      }
+
+      const newAccessToken = jwt.sign({ user }, JWT_TOKEN, {
+        expiresIn: "15m",
+      });
+      res.json({
+        accessToken: newAccessToken,
+        credentials: user,
+        status: 200,
+        message: "success",
+      });
     });
-    res.json({ accessToken: newAccessToken, credentials: user,status:200,message:"success" });
-  });
-});
+  }
+);
 
-AuthRoutes.get("/ping", async (req: Request, res: Response<any>) => {
-  res.json({ message: "just for ping " });
+AuthRoutes.get(
+  "/logout",
+  async (req: Request, res: Response<ResponseConfig>) => {
+    const token = req.cookies.collabQuotes_refreshToken;
 
-  // route for dummy response so that fetch accesstoken in redux logic
-});
+    console.log("logout reached");
 
-// AuthRoutes.get(
-//   "/login_cred",
-//   async (req: Request, res: Response<AuthResponseConfig>) => {
-//     const authHeader = req.headers.authorization || "";
+    res.clearCookie("collabQuotes_refreshToken", {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
 
-//     console.log(authHeader);
-
-//     const token = authHeader.split(" ")[1];
-
-//     if (!token) {
-//       console.log("token not found");
-
-//       res
-//         .status(401)
-//         .json({ message: "unauthorized", credentials: null, status: 300 });
-//       return;
-//     }
-
-//     jwt.verify(token, JWT_TOKEN, (err: any, user: any) => {
-//       if (err) {
-//         console.log("err: ", err);
-
-//         return res.sendStatus(403);
-//       }
-//       res.json(...user);
-//     });
-//   }
-// );
+    res.json({ status: 200, message: "Logged out" });
+  }
+);
 
 // AuthRoutes.get(
 //   "/verify_account/:id",
