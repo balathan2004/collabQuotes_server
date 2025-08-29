@@ -43,6 +43,7 @@ AuthRoutes.post(
         credentials: null,
         accessToken: "",
       });
+      return;
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -50,42 +51,60 @@ AuthRoutes.post(
       password: password,
     });
 
-    if (data && data.user) {
-      const userData =
-        ((
-          await supabase
-            .from("users")
-            .select("*")
-            .eq("email", email)
-            .maybeSingle()
-        ).data as UserDataInterface) || null;
-
-      if (!userData) {
-        res.json({
-          status: 300,
-          message: "Invalid Authentication",
-          credentials: null,
-          accessToken: "",
-        });
-        return;
-      }
-
-      const accessToken = generateAccessToken(userData);
-      const refreshToken = generateRefreshToken(userData);
-
-      res.cookie("collabQuotes_refreshToken", refreshToken, {
-        maxAge: 2592000000,
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        secure: process.env.NODE_ENV === "production",
-      });
-      res.json({
+    if (error) {
+      res.status(400).json({
         status: 200,
-        message: "Logged In",
-        credentials: { ...userData },
-        accessToken: accessToken,
+        message: error.message,
+        credentials: null,
+        accessToken: "",
       });
+      return;
     }
+
+    if (!data || !data.user) {
+      res.status(400).json({
+        status: 200,
+        message: "user not found",
+        credentials: null,
+        accessToken: "",
+      });
+      return;
+    }
+
+    const userData =
+      ((
+        await supabase
+          .from("users")
+          .select("*")
+          .eq("email", email)
+          .maybeSingle()
+      ).data as UserDataInterface) || null;
+
+    if (!userData) {
+      res.json({
+        status: 300,
+        message: "Invalid Authentication",
+        credentials: null,
+        accessToken: "",
+      });
+      return;
+    }
+
+    const accessToken = generateAccessToken(userData);
+    const refreshToken = generateRefreshToken(userData);
+
+    res.cookie("collabQuotes_refreshToken", refreshToken, {
+      maxAge: 2592000000,
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+    res.json({
+      status: 200,
+      message: "Logged In",
+      credentials: { ...userData },
+      accessToken: accessToken,
+    });
   }
 );
 
@@ -241,14 +260,12 @@ AuthRoutes.get(
     if (!refreshToken) {
       console.log("token not found");
 
-      res
-        .status(401)
-        .json({
-          message: "unauthorized",
-          credentials: null,
-          status: 300,
-          accessToken: "",
-        });
+      res.status(401).json({
+        message: "unauthorized",
+        credentials: null,
+        status: 300,
+        accessToken: "",
+      });
       return;
     }
 
