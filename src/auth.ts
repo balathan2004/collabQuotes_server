@@ -46,7 +46,6 @@ AuthRoutes.post(
       return;
     }
 
-
     // commented signin because of slow query of supabase , user doc exists only when they have account
 
     // const { data, error } = await supabase.auth.signInWithPassword({
@@ -98,17 +97,18 @@ AuthRoutes.post(
     const accessToken = generateAccessToken(userData);
     const refreshToken = generateRefreshToken(userData);
 
-    res.cookie("collabQuotes_refreshToken", refreshToken, {
-      maxAge: 2592000000,
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
+    // res.cookie("collabQuotes_refreshToken", refreshToken, {
+    //   maxAge: 2592000000,
+    //   httpOnly: true,
+    //   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    //   secure: process.env.NODE_ENV === "production",
+    // });
     res.json({
       status: 200,
       message: "Logged In",
       credentials: { ...userData },
       accessToken: accessToken,
+      refreshToken: refreshToken,
     });
   }
 );
@@ -257,9 +257,10 @@ AuthRoutes.post(
 );
 
 AuthRoutes.get(
-  "/refresh",
+  "/refresh/:id",
   async (req: Request, res: Response<AuthResponseConfig>) => {
-    const refreshToken = req.cookies?.collabQuotes_refreshToken;
+    const refreshToken = req.params.id;
+
     // console.log("refreshToken: ", refreshToken);
 
     if (!refreshToken) {

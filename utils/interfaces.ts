@@ -8,7 +8,8 @@ export interface ResponseConfig {
 
 export interface AuthResponseConfig extends ResponseConfig {
   credentials: UserDataInterface |null ;
-  accessToken:string
+  accessToken?:string
+  refreshToken?:string;
 }
 
 export interface ProfileResponseCofig extends ResponseConfig {
