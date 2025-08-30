@@ -46,30 +46,35 @@ AuthRoutes.post(
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
 
-    if (error) {
-      res.status(400).json({
-        status: 200,
-        message: error.message,
-        credentials: null,
-        accessToken: "",
-      });
-      return;
-    }
+    // commented signin because of slow query of supabase , user doc exists only when they have account
 
-    if (!data || !data.user) {
-      res.status(400).json({
-        status: 200,
-        message: "user not found",
-        credentials: null,
-        accessToken: "",
-      });
-      return;
-    }
+    // const { data, error } = await supabase.auth.signInWithPassword({
+    //   email: email,
+    //   password: password,
+    // });
+
+    // console.log({data});
+
+    // if (error) {
+    //   res.status(400).json({
+    //     status: 200,
+    //     message: error.message,
+    //     credentials: null,
+    //     accessToken: "",
+    //   });
+    //   return;
+    // }
+
+    // if (!data || !data.user) {
+    //   res.status(400).json({
+    //     status: 200,
+    //     message: "user not found",
+    //     credentials: null,
+    //     accessToken: "",
+    //   });
+    //   return;
+    // }
 
     const userData =
       ((
