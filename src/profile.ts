@@ -13,6 +13,7 @@ const ProfileRoutes = Router();
 ProfileRoutes.get(
   "/my_profile",
   async (req: Request, res: Response<ProfileResponseCofig>) => {
+    console.log("accessed  my profile");
     console.log(req.jwt.user);
 
     const uid = req.jwt?.user?.userId || null;

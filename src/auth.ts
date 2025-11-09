@@ -257,11 +257,9 @@ AuthRoutes.post(
 );
 
 AuthRoutes.get(
-  "/refresh/:id",
+  "/refresh",
   async (req: Request, res: Response<AuthResponseConfig>) => {
-    const refreshToken = req.params.id;
-
-    // console.log("refreshToken: ", refreshToken);
+    const { refreshToken } = req.body;
 
     if (!refreshToken) {
       console.log("token not found");
