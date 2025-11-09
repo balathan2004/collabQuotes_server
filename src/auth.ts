@@ -256,7 +256,7 @@ AuthRoutes.post(
   }
 );
 
-AuthRoutes.get(
+AuthRoutes.post(
   "/refresh",
   async (req: Request, res: Response<AuthResponseConfig>) => {
     const { refreshToken } = req.body;
